@@ -25,8 +25,10 @@ const Chats = (props) => {
             lastSenderName={chat.chat.id.toString()} 
             info={chat.chat.createdAt}
             onClick={() => props.history.push(`/chat/${chat.chat.id}`)}
+            unreadCnt={12}
           >
             <Avatar src={'https://lh3.googleusercontent.com/ogw/ADea4I7GOM3jFhU3s4x6-QoqDxPVZRwdSK0aV6Qy3DO7=s32-c-mo'} name="Lilly" />
+            <Conversation.Operations onClick={e => {e.stopPropagation(); console.log(123)}}/>   
           </Conversation>
         ))}
       </ConversationList>

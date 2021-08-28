@@ -1,16 +1,22 @@
 import { useState, useEffect } from 'react';
 import { createChat } from '../apis/chat';
-import { getUsers } from '../apis/user';
+import { getUsers, getUser } from '../apis/user';
 
 const useUser = () => {
   const [users, setUsers] = useState([]);
+  const [user, setUser] = useState({});
   const [select, setSelect] = useState<any>({});
+  
   useEffect(() => {
     (async () => {
-      const { data } = await getUsers(
+      const { data: users } = await getUsers(
         window.localStorage.getItem('userId') || ''
       );
-      setUsers(data);
+      const { data: user } = await getUser(
+        window.localStorage.getItem('userId') || ''
+      );
+      setUsers(users);
+      setUser(user);
     })();
   }, []);
 
@@ -28,13 +34,16 @@ const useUser = () => {
       name: new Date().getTime(),
       password: 'password'
     }
-    const data = await createChat(payload);
+    await createChat(payload);
+
+    // TODO: 생성된 채팅방 chatId를 소켓에 던져주어서 해당 채팅방 user들을 join한다
     
   }
 
   return {
     users,
     select,
+    user,
     onSelectHandler,
     onSubmitHandler
   };
