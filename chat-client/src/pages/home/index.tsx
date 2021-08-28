@@ -11,7 +11,7 @@ const Home = (props: any) => {
   }
 
   return (
-    <form className="loginForm">
+    <form className="loginForm" id="home">
       <h2>Login</h2>
       <div className="idForm">
         <input type="text" className="id" placeholder="id" value={id} onChange={ (e: any) => setId(e.target.value)}/>

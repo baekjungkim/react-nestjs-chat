@@ -7,6 +7,7 @@ import {
 import Chats from '../pages/chats';
 import Chat from '../pages/chat';
 import Home from '../pages/home';
+import MakeChat from '../pages/makeChat';
 
 const GoHome = (props) => {
   props.history.replace('/');
@@ -20,6 +21,7 @@ const Routes = () => {
         <Route exact path="/" component={Home} />
         <Route exact path="/chats" component={Chats} />
         <Route exact path="/chat/:chatId" component={Chat} />
+        <Route exact path="/make/chat" component={MakeChat} />
         
         
         <Route exact path="/chat" component={GoHome} />

@@ -5,6 +5,8 @@ import {
 } from '@chatscope/chat-ui-kit-react';
 import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css' ;
 
+import Fab from '../components/fab';
+
 import useChats from '../hooks/useChats';
 
 const Chats = (props) => {
@@ -28,6 +30,8 @@ const Chats = (props) => {
           </Conversation>
         ))}
       </ConversationList>
+
+      <Fab {...props}/>
     </div>
   );
 };

@@ -6,11 +6,11 @@
 
 }
 
-body {
+body #home{
   background-image: #34495e;
 }
 
-.loginForm {
+#home.loginForm {
   position:absolute;
   width:300px;
   height:400px;
@@ -23,24 +23,24 @@ body {
   border-radius: 15px;
 }
 
-.loginForm h2{
+#home.loginForm h2{
   text-align: center;
   margin: 30px;
 }
 
-.idForm{
+#home .idForm{
   border-bottom: 2px solid #adadad;
   margin: 30px;
   padding: 10px 10px;
 }
 
-.passForm{
+#home .passForm{
   border-bottom: 2px solid #adadad;
   margin: 30px;
   padding: 10px 10px;
 }
 
-.id {
+#home .id {
   width: 100%;
   border:none;
   outline:none;
@@ -50,7 +50,7 @@ body {
   background: none;
 }
 
-.pw {
+#home .pw {
   width: 100%;
   border:none;
   outline:none;
@@ -60,7 +60,7 @@ body {
   background: none;
 }
 
-.btn {
+#home .btn {
   position:relative;
   left:40%;
   transform: translateX(-50%);
@@ -78,10 +78,10 @@ body {
   display:inline;
 }
 
-.btn:hover {
+#home .btn:hover {
   background-position: right;
 }
 
-.bottomText {
+#home .bottomText {
   text-align: center;
 }
