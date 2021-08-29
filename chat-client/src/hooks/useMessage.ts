@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
 import { io, Socket } from "socket.io-client";
 import { getMessages } from '../apis/chat';
-import { notify } from '../utils/notification';
+
+
+
+import 'antd/dist/antd.css';
 
 export interface Message {
   id: number;
@@ -19,12 +22,11 @@ export interface Message {
   createdAt: string;
 }
 
-const useMessage = (chatId: number) => {
+const useMessage = (chatId: number, notification: Function) => {
   const [socket, setSocket] = useState<Socket>();
   const [messages, setMessage] = useState<Message[]>([]);
 
   useEffect(() => {
-    
     const sock: Socket = io(
       `${process.env.REACT_APP_SOCKET_API}`,
       {
@@ -51,14 +53,14 @@ const useMessage = (chatId: number) => {
       const {data} = await getMessages(chatId);
       
       setMessage(data);
+      
     })();
   }, [chatId]);
 
   const receiveMsg = (msg: Message) => {
     if (!isSameChat(msg)) {
-      // TODO: notification
-      console.log(msg);
-      notify(msg.msg);
+      // notification
+      notification(msg);
       return
     }
     setMessage([...messages, msg]);
@@ -69,7 +71,6 @@ const useMessage = (chatId: number) => {
   }
 
   const sendMessage = (message: string, msgType: string='text') => {
-
     socket?.emit('message', {
       chatId,
       msg: message,

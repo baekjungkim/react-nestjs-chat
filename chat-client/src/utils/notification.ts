@@ -1,4 +1,7 @@
-export function notify(msg: string) {
+import { notification } from "antd";
+import { Message } from '../hooks/useMessage';
+
+export function chromNotificationByNewMsgOtherChat(msg: string) {
   console.log(Notification.permission);
   if (!("Notification" in window)) {
     alert("This browser does not support desktop notification");
@@ -14,4 +17,15 @@ export function notify(msg: string) {
       }
     });
   }
+}
+
+export function innerNotificationByNewMsgOtherChat(msg: Message, onClick: Function) {
+  notification.open({
+    message: '새로운 메시지가 도착했습니다',
+    description: msg.msg,
+    onClick: () => {
+      onClick();
+      // window.location.href = `/chat/${msg.chat.id}`
+    },
+  });
 }

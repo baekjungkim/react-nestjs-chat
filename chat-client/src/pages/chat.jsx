@@ -8,10 +8,6 @@ import {
   MessageSeparator,
   MessageGroup,
   ConversationHeader,
-  StarButton,
-  VoiceCallButton,
-  VideoCallButton,
-  InfoButton
 } from '@chatscope/chat-ui-kit-react';
 import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css';
 
@@ -20,18 +16,31 @@ import { formatDate, formatTime } from '../utils/date';
 import useMessage from '../hooks/useMessage';
 import { DEFAULT_IMAGE } from '../utils/constant';
 
+import {
+  chromNotificationByNewMsgOtherChat,
+  innerNotificationByNewMsgOtherChat
+} from '../utils/notification';
 
 const Chat = (props) => {
   if (!props.match.params.chatId) props.history.replace('/');
 
   const chatId = parseInt(props.match.params.chatId);
-  const { messages, sendMessage } = useMessage(chatId);
+  const { messages, sendMessage } = useMessage(chatId, notification);
   const onSendHandler = (message) => {
     sendMessage(message);
   }
 
   function isMe(userId) {
     return parseInt(window.localStorage.getItem('userId')) === userId;
+  }
+
+  function notification(msg) {
+    console.log(msg)
+    chromNotificationByNewMsgOtherChat(msg.msg);
+    innerNotificationByNewMsgOtherChat(msg, () => {
+      props.history.replace(`/chat/${msg.chat.id}`, msg.chat);
+    });
+
   }
 
   const headerHeight = 63;
