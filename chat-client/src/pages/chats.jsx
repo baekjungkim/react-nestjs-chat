@@ -21,10 +21,9 @@ const Chats = (props) => {
         {chats.map(chat => (
           <Conversation 
             key={chat.id}
-            name={chat.chatName} 
-            // lastSenderName={chat.chatId.toString()} 
-            info={chat.msg || ''}
-            onClick={() => props.history.push(`/chat/${chat.chatId}`)}
+            name={chat.chat.name} 
+            info={chat.chat.msg || '채팅내용이 없습니다.'}
+            onClick={() => props.history.push(`/chat/${chat.chat.id}`)}
             unreadCnt={12}
           >
             <Avatar src={'https://lh3.googleusercontent.com/ogw/ADea4I7GOM3jFhU3s4x6-QoqDxPVZRwdSK0aV6Qy3DO7=s32-c-mo'} name="Lilly" />

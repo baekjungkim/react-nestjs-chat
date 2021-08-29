@@ -46,44 +46,16 @@ export class ChatService {
     private readonly checkRepository: Repository<Check>,
   ) {}
 
+  // 채팅이 발생하면 마지막 메시지를 채팅 테이블에 저장?....
   async getJoinChats(userId: number): Promise<JoinChat[]> {
-    // const user: User = await this.userRepository.findOne(userId);
-    const columns = [
-      'join_chat.id AS id',
-      'chat.id AS chatId',
-      'chat.name AS chatName',
-      'chat.password AS chatPassword',
-      'chat.createdAt AS chatCreatedAt',
-      'message.msg AS msg',
-      'message.msgType AS msgType',
-      'message.userId AS msgUserId',
-      'message.createdAt AS msgCreatedAt',
-    ];
-    const result: JoinChat[] = await this.connection.query(`
-      SELECT 
-        ${columns.join(',')}
-      FROM 
-        join_chat 
-      LEFT JOIN 
-        chat 
-      ON
-        chat.id = join_chat.chatId
-      LEFT JOIN 
-        message
-      ON
-        message.id = (SELECT id FROM message ORDER BY id DESC LIMIT 1)
-          AND chat.id = message.chatId
-      WHERE 
-        join_chat.userId= ${userId}
-    `);
-    console.log(result);
-    return result;
-    // return await this.joinChatRepository.find({
-    //   where: {
-    //     user,
-    //   },
-    //   relations: ['chat'],
-    // });
+    const user: User = await this.userRepository.findOne(userId);
+
+    return await this.joinChatRepository.find({
+      where: {
+        user,
+      },
+      relations: ['chat'],
+    });
   }
 
   async getChatMessages(chatId: number, fromId: number): Promise<Message[]> {
@@ -102,7 +74,7 @@ export class ChatService {
         createdAt: 'ASC',
       },
       relations: ['checks', 'user'],
-      take: 200,
+      // take: 200,
     });
   }
 
@@ -162,17 +134,14 @@ export class ChatService {
         msg: payloadMsg.msg,
         msgType: payloadMsg.msgType,
       });
+      chat.msg = payloadMsg.msg;
+      chat.msgType = payloadMsg.msgType;
+
+      await queryRunner.manager.save(Chat, chat);
       const message: Message = await queryRunner.manager.save(
         Message,
         createdMsg,
       );
-
-      const createdCheck: Check = await this.checkRepository.create({
-        user,
-        message,
-      });
-      await queryRunner.manager.save(Check, createdCheck);
-
       await queryRunner.commitTransaction();
       await queryRunner.release();
 

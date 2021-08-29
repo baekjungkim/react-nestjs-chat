@@ -7,13 +7,8 @@ export interface Chat {
   name: string;
   password: string;
   createdAt: Date;
-}
-
-export interface Message {
-  id: number;
-  chatId: number;
   msg: string;
-  msgType: string
+  msgType: string;
 }
 
 export interface User {
@@ -24,14 +19,8 @@ export interface User {
 
 export interface JoinChat {
   id: number;
-  chatId: number;
-  msgUserId: number; // 메시지 송신자 유저 아이디
-  chatName: string;
-  chatPassword: string;
-  msg: string;
-  msgType: string;
-  chatCreatedAt: Date;
-  msgCreatedAt: Date;
+  createdAt: Date;
+  chat: Chat;
 }
 
 const useChats = (userId: number) => {

@@ -21,6 +21,12 @@ export class Chat {
   @Column({ type: 'varchar' })
   password: string;
 
+  @Column({ type: 'text' })
+  msg: string;
+
+  @Column({ type: 'varchar' })
+  msgType: string;
+
   @CreateDateColumn()
   createdAt: Date;
 
