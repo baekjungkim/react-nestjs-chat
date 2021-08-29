@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { io, Socket } from "socket.io-client";
 import { getMessages } from '../apis/chat';
+import { notify } from '../utils/notification';
 
 export interface Message {
   id: number;
@@ -54,12 +55,19 @@ const useMessage = (chatId: number) => {
   }, [chatId]);
 
   const receiveMsg = (msg: Message) => {
-    if (!isSameChat(msg)) return;
+    if (!isSameChat(msg)) {
+      // TODO: notification
+      console.log(msg);
+      notify(msg.msg);
+      return
+    }
     setMessage([...messages, msg]);
   }
+
   const isSameChat = (msg: Message) => {
     return msg.chat.id === chatId;
   }
+
   const sendMessage = (message: string, msgType: string='text') => {
 
     socket?.emit('message', {
