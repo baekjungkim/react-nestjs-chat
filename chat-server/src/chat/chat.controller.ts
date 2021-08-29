@@ -9,7 +9,6 @@ export class ChatController {
   // 채팅목록
   @Get('/')
   async getChats(@Query() query) {
-    console.log(query);
     return await this.chatService.getJoinChats(query.userId);
   }
 

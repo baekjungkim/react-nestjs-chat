@@ -21,10 +21,10 @@ const Chats = (props) => {
         {chats.map(chat => (
           <Conversation 
             key={chat.id}
-            name={chat.chat.name} 
-            lastSenderName={chat.chat.id.toString()} 
-            info={chat.chat.createdAt}
-            onClick={() => props.history.push(`/chat/${chat.chat.id}`)}
+            name={chat.chatName} 
+            // lastSenderName={chat.chatId.toString()} 
+            info={chat.msg || ''}
+            onClick={() => props.history.push(`/chat/${chat.chatId}`)}
             unreadCnt={12}
           >
             <Avatar src={'https://lh3.googleusercontent.com/ogw/ADea4I7GOM3jFhU3s4x6-QoqDxPVZRwdSK0aV6Qy3DO7=s32-c-mo'} name="Lilly" />
