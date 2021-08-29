@@ -15,6 +15,7 @@ export class ChatController {
   // 채팅방 생성
   @Post('/')
   async createChat(@Body() body: CreateChatDto) {
+    console.log(body);
     return await this.chatService.createChat(body);
   }
 

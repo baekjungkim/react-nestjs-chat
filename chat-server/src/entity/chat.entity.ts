@@ -21,10 +21,10 @@ export class Chat {
   @Column({ type: 'varchar' })
   password: string;
 
-  @Column({ type: 'text' })
+  @Column({ type: 'text', default: '', nullable: true })
   msg: string;
 
-  @Column({ type: 'varchar' })
+  @Column({ type: 'varchar', default: '', nullable: true })
   msgType: string;
 
   @CreateDateColumn()

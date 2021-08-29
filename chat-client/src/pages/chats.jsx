@@ -8,6 +8,7 @@ import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css' ;
 import Fab from '../components/fab';
 
 import useChats from '../hooks/useChats';
+import { DEFAULT_IMAGE } from '../utils/constant';
 
 const Chats = (props) => {
   if(!window.localStorage.getItem('userId')) props.history.replace('/');
@@ -20,13 +21,13 @@ const Chats = (props) => {
       <ConversationList>
         {chats.map(chat => (
           <Conversation 
-            key={chat.id}
+            key={chat.chat.id}
             name={chat.chat.name} 
             info={chat.chat.msg || '채팅내용이 없습니다.'}
             onClick={() => props.history.push(`/chat/${chat.chat.id}`)}
-            unreadCnt={12}
+            // unreadCnt={12} // noti
           >
-            <Avatar src={'https://lh3.googleusercontent.com/ogw/ADea4I7GOM3jFhU3s4x6-QoqDxPVZRwdSK0aV6Qy3DO7=s32-c-mo'} name="Lilly" />
+            <Avatar src={DEFAULT_IMAGE} name="Lilly" />
             <Conversation.Operations onClick={e => {e.stopPropagation(); console.log(123)}}/>   
           </Conversation>
         ))}

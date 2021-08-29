@@ -11,12 +11,14 @@ import { ChatService } from 'src/chat/chat.service';
 import { Check } from 'src/entity/check.entity';
 import { JoinChat } from 'src/entity/joinChat.entity';
 import { Message } from 'src/entity/message.entity';
-import { MessageCheckDto, SendMessageDto } from './chat.dto';
+import { ChatJoined, MessageCheckDto, SendMessageDto } from './chat.dto';
 
 @WebSocketGateway()
 export class ChatGateway {
   @WebSocketServer()
   server: Server;
+
+  client = {};
 
   constructor(private readonly chatService: ChatService) {}
 
@@ -60,27 +62,40 @@ export class ChatGateway {
     });
   }
 
+  @SubscribeMessage('chat-joined')
+  async createChat(
+    @MessageBody() data: ChatJoined,
+    @ConnectedSocket() client: Socket,
+  ) {
+    const chatId = data.chat.id;
+
+    client.join(`${chatId}`);
+    data.joinIds.forEach((joinId: number) => {
+      if (this.client[joinId]) {
+        this.client[joinId].join(`${chatId}`);
+        this.server.to(this.client[joinId].id).emit('chat-joined', data);
+      }
+    });
+  }
+
   async handleConnection(@ConnectedSocket() client: Socket) {
     console.log('handleConnection');
-    // const { userid }: Headers =
-    //   (client.handshake.headers as unknown as Headers) ||
-    //   (client.handshake.auth.userid as unknown as Headers);
+
     const userId: number | boolean = this.getUserId(client);
     if (!userId) return;
-
+    this.client[userId] = client;
     const chats: JoinChat[] = await this.chatService.getJoinChats(userId);
     chats.forEach((chat: JoinChat) => {
       client.join(`${chat.chat.id}`);
     });
-    // 포함된 채팅방 room join
     console.log('connected');
   }
 
   async handleDisconnect(@ConnectedSocket() client: Socket) {
-    // room leave
     const userId: number | boolean = this.getUserId(client);
 
     if (!userId) return;
+    delete this.client[userId];
     const chats: JoinChat[] = await this.chatService.getJoinChats(userId);
     chats.forEach((chat: JoinChat) => {
       client.leave(`${chat.chat.id}`);

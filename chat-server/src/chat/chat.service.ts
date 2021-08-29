@@ -59,6 +59,8 @@ export class ChatService {
   }
 
   async getChatMessages(chatId: number, fromId: number): Promise<Message[]> {
+    // TODO: limit이 이상하게 동작하는거 같아서 일단 뻄...
+    // DESC로 하면 결과를 reverse해서 사용해야함... => map => length - index - 1로 대체할 것!
     const chat: Chat = await this.chatRepository.findOne(chatId);
     const where = {
       chat,
@@ -93,9 +95,10 @@ export class ChatService {
         user,
         name: payloadChat.name,
         password: payloadChat.password,
+        msg: '',
+        msgType: '',
       });
       const chat = await queryRunner.manager.save(Chat, createdChat);
-
       const joineds: { user: User; chat: Chat }[] = [...users, user].map(
         (user: User) => ({
           user,
@@ -110,6 +113,7 @@ export class ChatService {
         joinChats,
       };
     } catch (err) {
+      console.log(err);
       await queryRunner.rollbackTransaction();
       await queryRunner.release();
       return {
