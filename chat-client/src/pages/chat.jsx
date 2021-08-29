@@ -21,6 +21,8 @@ import {
   innerNotificationByNewMsgOtherChat
 } from '../utils/notification';
 
+import 'antd/dist/antd.css';
+
 const Chat = (props) => {
   if (!props.match.params.chatId) props.history.replace('/');
 
@@ -92,6 +94,7 @@ const Chat = (props) => {
           </ChatContainer>
         </MainContainer>
       </div>
+
     </>
   );
 }

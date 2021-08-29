@@ -3,9 +3,6 @@ import { io, Socket } from "socket.io-client";
 import { getMessages } from '../apis/chat';
 
 
-
-import 'antd/dist/antd.css';
-
 export interface Message {
   id: number;
   user: {
