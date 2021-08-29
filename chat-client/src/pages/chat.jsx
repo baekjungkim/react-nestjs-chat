@@ -6,13 +6,19 @@ import {
   MessageInput,
   Avatar,
   MessageSeparator,
-  MessageGroup
+  MessageGroup,
+  ConversationHeader,
+  StarButton,
+  VoiceCallButton,
+  VideoCallButton,
+  InfoButton
 } from '@chatscope/chat-ui-kit-react';
 import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css';
 
 import { formatDate, formatTime } from '../utils/date';
 
 import useMessage from '../hooks/useMessage';
+import { DEFAULT_IMAGE } from '../utils/constant';
 
 
 const Chat = (props) => {
@@ -28,11 +34,21 @@ const Chat = (props) => {
     return parseInt(window.localStorage.getItem('userId')) === userId;
   }
 
-  const headerHeight = 50;
+  const headerHeight = 63;
 
   return (
     <>
-      <div style={{ position: "relative", height: headerHeight }}></div>
+      <ConversationHeader>
+        <ConversationHeader.Back onClick={() => props.history.replace('/chats')}/>
+        <Avatar src={DEFAULT_IMAGE}  />
+        <ConversationHeader.Content userName={props.location.state.name} info={props.location.state.createdAt} />                                   
+        <ConversationHeader.Actions>                                                                             
+          {/* <StarButton title="Add to favourites" />
+          <VoiceCallButton title="Start voice call" />
+          <VideoCallButton title="Start video call" />
+          <InfoButton title="Show info" /> */}
+        </ConversationHeader.Actions>
+      </ConversationHeader>
       <div style={{ position: "relative", height: window.innerHeight - headerHeight }}>
         <MainContainer>
           <ChatContainer>

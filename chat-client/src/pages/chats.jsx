@@ -24,7 +24,7 @@ const Chats = (props) => {
             key={chat.chat.id}
             name={chat.chat.name} 
             info={chat.chat.msg || '채팅내용이 없습니다.'}
-            onClick={() => props.history.push(`/chat/${chat.chat.id}`)}
+            onClick={() => props.history.push(`/chat/${chat.chat.id}`, chat.chat)}
             // unreadCnt={12} // noti
           >
             <Avatar src={DEFAULT_IMAGE} name="Lilly" />
