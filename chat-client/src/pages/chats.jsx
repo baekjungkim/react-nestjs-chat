@@ -12,6 +12,7 @@ import { DEFAULT_IMAGE } from '../utils/constant';
 
 const Chats = (props) => {
   if(!window.localStorage.getItem('userId')) props.history.replace('/');
+  
   const { chats } = useChats(window.localStorage.getItem('userId'));
   
   return (

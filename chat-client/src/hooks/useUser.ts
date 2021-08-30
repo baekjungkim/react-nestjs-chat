@@ -2,10 +2,11 @@ import { useState, useEffect } from 'react';
 import { createChat } from '../apis/chat';
 import { getUsers, getUser } from '../apis/user';
 
-import { io, Socket } from 'socket.io-client';
+// import { io, Socket } from 'socket.io-client';
+import chatSocket, {ChatSocket} from '../socket';
 
 const useUser = () => {
-  const [socket, setSocket] = useState<Socket>();
+  const [socket] = useState<ChatSocket>(chatSocket);
   const [users, setUsers] = useState([]);
   const [user, setUser] = useState({});
   const [select, setSelect] = useState<any>({});
@@ -21,18 +22,6 @@ const useUser = () => {
       setUsers(users);
       setUser(user);
     })();
-
-    const socket = io(
-      `${process.env.REACT_APP_SOCKET_API}`,
-      {
-        transports: ["websocket"],
-        auth: {
-          userid: window.localStorage.getItem('userId') || ''
-        }
-      }
-    );
-
-    setSocket(socket);
   }, []);
 
   useEffect(() => {
@@ -54,12 +43,10 @@ const useUser = () => {
       password: 'password'
     }
     const { data } = await createChat(payload);
-    socket?.emit('chat-joined', {
+    socket.emitChatJoined({
       chat: data.chat,
       joinIds,
-    });
-    // TODO: 생성된 채팅방 chatId를 소켓에 던져주어서 해당 채팅방 user들을 join한다
-    
+    })    
   }
 
   return {

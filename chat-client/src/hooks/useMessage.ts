@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { io, Socket } from "socket.io-client";
+
 import { getMessages } from '../apis/chat';
+import chatSocket, {ChatSocket} from '../socket';
 
 
 export interface Message {
@@ -20,59 +21,41 @@ export interface Message {
 }
 
 const useMessage = (chatId: number, notification: Function) => {
-  const [socket, setSocket] = useState<Socket>();
+  const [socket] = useState<ChatSocket>(chatSocket);
   const [messages, setMessage] = useState<Message[]>([]);
 
   useEffect(() => {
-    const sock: Socket = io(
-      `${process.env.REACT_APP_SOCKET_API}`,
-      {
-        transports: ["websocket"],
-        auth: {
-          userid: window.localStorage.getItem('userId') || ''
-        }
+    const receiveMsg = (msg: Message) => {
+      if (!isSameChat(msg)) {
+        notification(msg);
+        return
       }
-    )
+      socket.emitMessageCheck({
+        chatId,
+        userId: window.localStorage.getItem('userId') || '',
+      })
+      setMessage([...messages, msg]);
+    }
 
-    setSocket(sock);
-  }, []);
-  
-  useEffect(() => {
-    if (!socket) return;
-    socket.on('message', receiveMsg);
+    socket.onReceiveMessage(receiveMsg);
     return () => {
-      socket.off('message', receiveMsg);
+      socket.offReceiveMessage(receiveMsg);
     }
   }, [socket, messages]); 
 
   useEffect(() => {
     (async () => {
-      const {data} = await getMessages(chatId, window.localStorage.getItem('userId') || '');
-      
+      const { data } = await getMessages(chatId, window.localStorage.getItem('userId') || '');
       setMessage(data);
-      
     })();
   }, [chatId]);
-
-  const receiveMsg = (msg: Message) => {
-    if (!isSameChat(msg)) {
-      // notification
-      notification(msg);
-      return
-    }
-    socket?.emit('message-check', {
-      chatId,
-      userId: window.localStorage.getItem('userId') || '',
-    })
-    setMessage([...messages, msg]);
-  }
 
   const isSameChat = (msg: Message) => {
     return msg.chat.id === chatId;
   }
 
-  const sendMessage = (message: string, msgType: string='text') => {
-    socket?.emit('message', {
+  const sendMessage = (message: string, msgType: string = 'text') => {
+    socket.emitMessage({
       chatId,
       msg: message,
       msgType,

@@ -8,7 +8,6 @@ import {
 
 import { Server, Socket } from 'socket.io';
 import { ChatService } from 'src/chat/chat.service';
-import { Check } from 'src/entity/check.entity';
 import { JoinChat } from 'src/entity/joinChat.entity';
 import { Message } from 'src/entity/message.entity';
 import { ChatJoined, MessageCheckDto, SendMessageDto } from './chat.dto';
@@ -31,6 +30,10 @@ export class ChatGateway {
       client.handshake.headers.userid || client.handshake.auth.userid;
 
     if (!userId) return;
+
+    console.log('[EVENT] message', userId);
+
+    console.log(data);
     const message: Message = await this.chatService.sendMsg({
       ...data,
       userId: parseInt(userId),
@@ -72,7 +75,6 @@ export class ChatGateway {
 
   async handleConnection(@ConnectedSocket() client: Socket) {
     console.log('handleConnection');
-
     const userId: number | boolean = this.getUserId(client);
     if (!userId) return;
     this.client[userId] = client;
@@ -84,6 +86,7 @@ export class ChatGateway {
   }
 
   async handleDisconnect(@ConnectedSocket() client: Socket) {
+    console.log('handleDisconnect');
     const userId: number | boolean = this.getUserId(client);
 
     if (!userId) return;

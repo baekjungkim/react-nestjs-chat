@@ -28,6 +28,7 @@ const Chat = (props) => {
 
   const chatId = parseInt(props.match.params.chatId);
   const { messages, sendMessage } = useMessage(chatId, notification);
+  
   const onSendHandler = (message) => {
     sendMessage(message);
   }
@@ -37,12 +38,10 @@ const Chat = (props) => {
   }
 
   function notification(msg) {
-    console.log(msg)
     chromNotificationByNewMsgOtherChat(msg.msg);
     innerNotificationByNewMsgOtherChat(msg, () => {
       props.history.replace(`/chat/${msg.chat.id}`, msg.chat);
     });
-
   }
 
   const headerHeight = 63;
@@ -54,10 +53,6 @@ const Chat = (props) => {
         <Avatar src={DEFAULT_IMAGE}  />
         <ConversationHeader.Content userName={props.location.state.name} info={props.location.state.createdAt} />                                   
         <ConversationHeader.Actions>                                                                             
-          {/* <StarButton title="Add to favourites" />
-          <VoiceCallButton title="Start voice call" />
-          <VideoCallButton title="Start video call" />
-          <InfoButton title="Show info" /> */}
         </ConversationHeader.Actions>
       </ConversationHeader>
       <div style={{ position: "relative", height: window.innerHeight - headerHeight }}>
