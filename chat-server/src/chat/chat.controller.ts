@@ -25,6 +25,10 @@ export class ChatController {
     console.log('메시지목록');
     console.log(param);
     const fromId = query.fromId;
-    return await this.chatService.getChatMessages(param.chatId, fromId);
+    return await this.chatService.getChatMessages(
+      param.chatId,
+      fromId,
+      query.userId,
+    );
   }
 }

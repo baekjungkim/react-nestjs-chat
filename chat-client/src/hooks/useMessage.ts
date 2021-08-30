@@ -47,7 +47,7 @@ const useMessage = (chatId: number, notification: Function) => {
 
   useEffect(() => {
     (async () => {
-      const {data} = await getMessages(chatId);
+      const {data} = await getMessages(chatId, window.localStorage.getItem('userId') || '');
       
       setMessage(data);
       
@@ -60,6 +60,10 @@ const useMessage = (chatId: number, notification: Function) => {
       notification(msg);
       return
     }
+    socket?.emit('message-check', {
+      chatId,
+      userId: window.localStorage.getItem('userId') || '',
+    })
     setMessage([...messages, msg]);
   }
 

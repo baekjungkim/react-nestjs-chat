@@ -22,6 +22,7 @@ export interface User {
 
 export interface JoinChat {
   id: number;
+  notReadMsgCnt: number;
   createdAt: Date;
   chat: Chat;
 }
@@ -67,16 +68,17 @@ const useChats = (userId: number) => {
   const onChatJoined = (data: {chat: Chat}) => {
     setChats([
       ...chats,
-      { id: -1, chat: data.chat, createdAt: new Date() }
+      { id: -1, chat: data.chat, createdAt: new Date(), notReadMsgCnt: 0 }
     ]);
   }
   const onReceiveMessage = (message: any) => {
     const chatId = message.chat.id;
-    const cloneChat = _.cloneDeep(chats);
+    const cloneChat:JoinChat [] = _.cloneDeep(chats);
     const chatIdx = cloneChat.findIndex(chat => chat.chat.id === chatId);
 
     cloneChat[chatIdx].chat.msg = message.msg;
     cloneChat[chatIdx].chat.msgType = message.msgType;
+    cloneChat[chatIdx].notReadMsgCnt += 1;
     
     setChats(selectPickAndFirstInsert(cloneChat, chatIdx));
   }

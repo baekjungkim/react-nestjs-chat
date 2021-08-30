@@ -3,6 +3,7 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   ManyToOne,
+  Column,
 } from 'typeorm';
 import { Chat } from './chat.entity';
 import { User } from './user.entity';
@@ -11,6 +12,9 @@ import { User } from './user.entity';
 export class JoinChat {
   @PrimaryGeneratedColumn()
   id: number;
+
+  @Column({ type: 'integer', default: 0 })
+  notReadMsgCnt: number;
 
   @CreateDateColumn()
   createdAt: Date;

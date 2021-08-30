@@ -51,15 +51,7 @@ export class ChatGateway {
 
     if (!userId) return;
 
-    const checks: Check[] = await this.chatService.checkMsg(
-      userId,
-      data.messageIds,
-    );
-    this.server.to(`${data.chatId}`).emit('message-check', {
-      chatId: data.chatId,
-      range: data.messageIds,
-      checks,
-    });
+    await this.chatService.checkMsg(userId, data.chatId);
   }
 
   @SubscribeMessage('chat-joined')

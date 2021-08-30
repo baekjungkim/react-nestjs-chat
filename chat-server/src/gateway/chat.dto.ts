@@ -14,10 +14,6 @@ export class SendMessageDto {
 }
 
 export class MessageCheckDto {
-  @IsInt({ each: true })
-  @Type(() => Number)
-  messageIds: number[];
-
   @IsInt()
   @Type(() => Number)
   chatId: number;

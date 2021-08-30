@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Between, In, LessThan, Repository } from 'typeorm';
+import { Between, In, LessThan, Not, Repository } from 'typeorm';
 
 import { Connection } from 'typeorm';
 
@@ -58,7 +58,11 @@ export class ChatService {
     });
   }
 
-  async getChatMessages(chatId: number, fromId: number): Promise<Message[]> {
+  async getChatMessages(
+    chatId: number,
+    fromId: number,
+    userId: number,
+  ): Promise<Message[]> {
     // TODO: limit이 이상하게 동작하는거 같아서 일단 뻄...
     // DESC로 하면 결과를 reverse해서 사용해야함... => map => length - index - 1로 대체할 것!
     const chat: Chat = await this.chatRepository.findOne(chatId);
@@ -68,6 +72,15 @@ export class ChatService {
     };
 
     if (!fromId) delete where.id;
+
+    await this.joinChatRepository
+      .createQueryBuilder('joinChat')
+      .update(JoinChat)
+      .set({
+        notReadMsgCnt: 0,
+      })
+      .where('userID=:userId AND chatId=:chatId', { userId, chatId })
+      .execute();
 
     return await this.messageRepository.find({
       where,
@@ -125,9 +138,12 @@ export class ChatService {
 
   async sendMsg(payloadMsg: MessageDto) {
     // Message row 생성
-    // check row 생성
     const user: User = await this.userRepository.findOne(payloadMsg.userId);
     const chat: Chat = await this.chatRepository.findOne(payloadMsg.chatId);
+    const joinChats: JoinChat[] = await this.joinChatRepository.find({
+      where: { chat, user: Not(user.id) },
+    });
+
     const queryRunner = this.connection.createQueryRunner();
     await queryRunner.startTransaction();
 
@@ -146,11 +162,20 @@ export class ChatService {
         Message,
         createdMsg,
       );
+
+      const updateNotReadMsgCnt = joinChats.map((joinChat: JoinChat) => ({
+        ...joinChat,
+        notReadMsgCnt: joinChat.notReadMsgCnt + 1,
+      }));
+
+      await queryRunner.manager.save(JoinChat, updateNotReadMsgCnt);
+
       await queryRunner.commitTransaction();
       await queryRunner.release();
 
       return message;
     } catch (err) {
+      console.log(err);
       await queryRunner.rollbackTransaction();
       await queryRunner.release();
 
@@ -158,35 +183,29 @@ export class ChatService {
     }
   }
 
-  async checkMsg(userId: number, msgIds: number[]) {
-    const user: User = await this.userRepository.findOne(userId);
-    const messages: Message[] = await this.messageRepository.find({
-      where: {
-        id: Between(msgIds[0], msgIds[1]),
-      },
-    });
-
+  async checkMsg(userId: number, chatId: number): Promise<boolean> {
     const queryRunner = this.connection.createQueryRunner();
     await queryRunner.startTransaction();
 
     try {
-      const checks: Check[] = messages.map((message: Message) =>
-        this.checkRepository.create({
-          user,
-          message,
-        }),
-      );
-      await queryRunner.manager.save(Check, checks);
+      await this.joinChatRepository
+        .createQueryBuilder('joinChat')
+        .update(JoinChat)
+        .set({
+          notReadMsgCnt: 0,
+        })
+        .where('userID=:userId AND chatId=:chatId', { userId, chatId })
+        .execute();
 
       await queryRunner.commitTransaction();
       await queryRunner.release();
 
-      return checks;
+      return true;
     } catch (err) {
       await queryRunner.rollbackTransaction();
       await queryRunner.release();
 
-      return [] as Check[];
+      return false;
     }
   }
 }

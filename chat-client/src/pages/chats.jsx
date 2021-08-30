@@ -25,7 +25,7 @@ const Chats = (props) => {
             name={chat.chat.name} 
             info={chat.chat.msg || '채팅내용이 없습니다.'}
             onClick={() => props.history.push(`/chat/${chat.chat.id}`, chat.chat)}
-            // unreadCnt={12} // noti
+            unreadCnt={chat.notReadMsgCnt} // noti
           >
             <Avatar src={DEFAULT_IMAGE} name="Lilly" />
             <Conversation.Operations onClick={e => {e.stopPropagation(); console.log(123)}}/>   

@@ -8,8 +8,12 @@ export async function getChats(userId: number) {
   });
 }
 
-export async function getMessages(chatId: number) {
-  return await axios.get(`${process.env.REACT_APP_HTTP_API}/chat/${chatId}`);
+export async function getMessages(chatId: number, userId: string) {
+  return await axios.get(`${process.env.REACT_APP_HTTP_API}/chat/${chatId}`, {
+    params: {
+      userId,
+    }
+  });
 }
 
 export async function createChat(payload: any) {
