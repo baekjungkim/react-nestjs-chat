@@ -6,6 +6,7 @@ import {
   Column,
 } from 'typeorm';
 import { Chat } from './chat.entity';
+import { Message } from './message.entity';
 import { User } from './user.entity';
 
 @Entity()
@@ -24,5 +25,7 @@ export class JoinChat {
 
   @ManyToOne(() => Chat, (chat) => chat.joinChats)
   chat: Chat;
-  // chat  ManyToOne
+
+  @ManyToOne(() => Message, (message) => message.joinChats)
+  checkedLastMessage: Message;
 }

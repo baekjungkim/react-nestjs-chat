@@ -31,15 +31,11 @@ export class ChatGateway {
 
     if (!userId) return;
 
-    console.log('[EVENT] message', userId);
-
-    console.log(data);
     const message: Message = await this.chatService.sendMsg({
       ...data,
       userId: parseInt(userId),
     });
-    console.log(message);
-    console.log(data);
+
     this.server.to(`${data.chatId}`).emit('message', message);
 
     return 1;
@@ -51,10 +47,13 @@ export class ChatGateway {
     @ConnectedSocket() client: Socket,
   ) {
     const userId: number | boolean = this.getUserId(client);
-
     if (!userId) return;
+    const checkMesssageRange: [number, number] | boolean =
+      await this.chatService.checkMsg(userId, data.chatId, data.toMessageId);
 
-    await this.chatService.checkMsg(userId, data.chatId);
+    if (!checkMesssageRange) return;
+
+    this.server.to(`${data.chatId}`).emit('message-check', checkMesssageRange);
   }
 
   @SubscribeMessage('chat-joined')
@@ -64,7 +63,6 @@ export class ChatGateway {
   ) {
     const chatId = data.chat.id;
 
-    client.join(`${chatId}`);
     data.joinIds.forEach((joinId: number) => {
       if (this.client[joinId]) {
         this.client[joinId].join(`${chatId}`);
@@ -77,6 +75,7 @@ export class ChatGateway {
     console.log('handleConnection');
     const userId: number | boolean = this.getUserId(client);
     if (!userId) return;
+    console.log(userId);
     this.client[userId] = client;
     const chats: JoinChat[] = await this.chatService.getJoinChats(userId);
     chats.forEach((chat: JoinChat) => {

@@ -84,7 +84,7 @@ export class ChatService {
 
     return await this.messageRepository.find({
       where,
-      select: ['id', 'msg', 'msgType', 'createdAt'],
+      select: ['id', 'msg', 'msgType', 'createdAt', 'readUserCnt'],
       order: {
         createdAt: 'ASC',
       },
@@ -141,7 +141,7 @@ export class ChatService {
     const user: User = await this.userRepository.findOne(payloadMsg.userId);
     const chat: Chat = await this.chatRepository.findOne(payloadMsg.chatId);
     const joinChats: JoinChat[] = await this.joinChatRepository.find({
-      where: { chat, user: Not(user.id) },
+      where: { chat },
     });
 
     const queryRunner = this.connection.createQueryRunner();
@@ -183,16 +183,56 @@ export class ChatService {
     }
   }
 
-  async checkMsg(userId: number, chatId: number): Promise<boolean> {
+  async checkMsg(
+    userId: number,
+    chatId: number,
+    toMessageId: number,
+  ): Promise<boolean | [number, number]> {
+    // 확인한 마지막 메시지(checkedLastMessageId)와 지금 확인한 메시지 아이디를 받는다.
+    // 확인한 유저는 joinChat의 messageId를 업데이트
+    // message에서 readUserCnt + 1
     const queryRunner = this.connection.createQueryRunner();
     await queryRunner.startTransaction();
-
+    console.log(userId);
     try {
+      const joinChat: JoinChat = await this.joinChatRepository.findOne({
+        where: {
+          user: userId,
+        },
+        relations: ['checkedLastMessage'],
+      });
+      const user: User = await this.userRepository.findOne({
+        where: {
+          id: userId,
+        },
+      });
+
+      const checkedLastMessageId: number = joinChat.checkedLastMessage.id;
+
+      // 읽은수 카운트 할 메시지 조회
+      await this.messageRepository
+        .createQueryBuilder('message')
+        .update(Message)
+        .set({ readUserCnt: () => 'readUserCnt + 1' })
+        .where({
+          user: Not(user.id),
+          id: Between(checkedLastMessageId + 1, toMessageId),
+        })
+        .execute();
+
+      const checkedLastMessage: Message = await this.messageRepository.findOne({
+        where: {
+          id: toMessageId,
+        },
+      });
+
+      // 확인한 마지막 메시지를 업데이트 한 마지막 메시지로 수정
       await this.joinChatRepository
         .createQueryBuilder('joinChat')
         .update(JoinChat)
         .set({
           notReadMsgCnt: 0,
+          checkedLastMessage,
         })
         .where('userID=:userId AND chatId=:chatId', { userId, chatId })
         .execute();
@@ -200,8 +240,9 @@ export class ChatService {
       await queryRunner.commitTransaction();
       await queryRunner.release();
 
-      return true;
+      return [checkedLastMessageId, toMessageId];
     } catch (err) {
+      console.log(err);
       await queryRunner.rollbackTransaction();
       await queryRunner.release();
 

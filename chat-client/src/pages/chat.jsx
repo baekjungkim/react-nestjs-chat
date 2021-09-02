@@ -80,7 +80,7 @@ const Chat = (props) => {
                       }} />
                     
                     </MessageGroup.Messages>
-                    <MessageGroup.Footer>{formatTime(message.createdAt)}</MessageGroup.Footer>
+                    <MessageGroup.Footer>{formatTime(message.createdAt)} - {message.readUserCnt}</MessageGroup.Footer>
                   </MessageGroup>
                 </>
               ))}

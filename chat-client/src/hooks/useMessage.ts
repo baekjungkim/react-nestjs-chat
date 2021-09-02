@@ -6,6 +6,7 @@ import chatSocket, {ChatSocket} from '../socket';
 
 export interface Message {
   id: number;
+  readUserCnt: number;
   user: {
     id: number;
     name: string;
@@ -23,6 +24,7 @@ export interface Message {
 const useMessage = (chatId: number, notification: Function) => {
   const [socket] = useState<ChatSocket>(chatSocket);
   const [messages, setMessage] = useState<Message[]>([]);
+  const [isJoinEnd, setIsJoinEnd] = useState<boolean>(false);
 
   useEffect(() => {
     const receiveMsg = (msg: Message) => {
@@ -33,13 +35,37 @@ const useMessage = (chatId: number, notification: Function) => {
       socket.emitMessageCheck({
         chatId,
         userId: window.localStorage.getItem('userId') || '',
-      })
+        toMessageId: msg.id
+      });
       setMessage([...messages, msg]);
     }
 
+    const checkMessage = (rangeMsg: [number, number]) => {
+      // range[0] 보다 크고 ran
+      console.log(rangeMsg);
+      let index: number = -1;
+      const tempMessage: Message[] = [...messages];
+      let countingMessages: Message[] = tempMessage.filter((msg: Message, idx: number) => {
+        const isOver = msg.id > rangeMsg[0];
+        if (index === -1 && msg.id) index = idx;
+        return isOver;
+      })
+
+      countingMessages = countingMessages.map((msg: Message) => {
+        msg.readUserCnt += 1;
+        return msg;
+      });
+      console.log(index);
+      console.log(countingMessages);
+      setMessage([...tempMessage.slice(0, index), ...countingMessages])
+    }
+
     socket.onReceiveMessage(receiveMsg);
+    socket.onMessageCheck(checkMessage);
+    
     return () => {
       socket.offReceiveMessage(receiveMsg);
+      socket.offMessageCheck(checkMessage);
     }
   }, [socket, messages]); 
 
@@ -49,6 +75,16 @@ const useMessage = (chatId: number, notification: Function) => {
       setMessage(data);
     })();
   }, [chatId]);
+
+  // useEffect(() => {
+  //   if (!messages.length) return;
+  //   console.log(messages, );
+  //     // socket.emitMessageCheck({
+  //     //   chatId,
+  //     //   userId: window.localStorage.getItem('userId') || '',
+  //     //   toMessageId: messages[messages.length - 1].id
+  //     // });
+  // }, [messages]);
 
   const isSameChat = (msg: Message) => {
     return msg.chat.id === chatId;

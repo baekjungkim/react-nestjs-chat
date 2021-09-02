@@ -43,6 +43,13 @@ export class ChatSocket {
   offReceiveMessage(cb: any) {
     this.socket.off('message', cb);
   }
+  
+  onMessageCheck(cb: any) {
+    this.socket.on('message-check', cb);
+  }
+  offMessageCheck(cb: any) {
+    this.socket.off('message-check', cb);
+  }
 }
 
 export default new ChatSocket();

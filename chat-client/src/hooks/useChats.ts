@@ -45,6 +45,7 @@ const useChats = (userId: number) => {
 
     const onChatJoined = (data: { chat: Chat }) => {
       console.log('chat-joined')
+      console.log(chats);
       _setChats([
         ...chats,
         { id: -1, chat: data.chat, createdAt: new Date(), notReadMsgCnt: 0 }

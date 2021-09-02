@@ -9,6 +9,7 @@ import {
 import { Chat } from './chat.entity';
 import { User } from './user.entity';
 import { Check } from './check.entity';
+import { JoinChat } from './joinChat.entity';
 
 @Entity()
 export class Message {
@@ -21,6 +22,9 @@ export class Message {
   @Column({ type: 'varchar' })
   msgType: string;
 
+  @Column({ type: 'integer', default: 1 })
+  readUserCnt: number;
+
   @CreateDateColumn()
   createdAt: Date;
 
@@ -32,4 +36,7 @@ export class Message {
 
   @OneToMany(() => Check, (check) => check.message)
   checks: Check[];
+
+  @OneToMany(() => JoinChat, (joinChat) => joinChat.checkedLastMessage)
+  joinChats: JoinChat[];
 }
