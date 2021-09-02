@@ -61,8 +61,8 @@ const useMessage = (chatId: number, notification: Function) => {
     }
 
     socket.onReceiveMessage(receiveMsg);
-    socket.onMessageCheck(checkMessage);
-    
+    socket.onMessageCheck(checkMessage); // TODO: 메시지가 누군가에게 읽혔다는 정보 수신 버그있음
+
     return () => {
       socket.offReceiveMessage(receiveMsg);
       socket.offMessageCheck(checkMessage);
