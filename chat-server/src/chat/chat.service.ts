@@ -79,16 +79,20 @@ export class ChatService {
       },
       relations: ['checkedLastMessage'],
     });
-    const checkedLastMessageId: number =
-      checkedLastMessage.checkedLastMessage.id;
+
+    let checkedLastMessageId: number | null =
+      checkedLastMessage?.checkedLastMessage?.id;
+
+    checkedLastMessageId = checkedLastMessageId ? checkedLastMessageId : 0;
 
     // 각 메시지 읽은유저 + 1 업데이트
-    const a = await this.messageRepository
+    await this.messageRepository
       .createQueryBuilder('message')
       .update(Message)
       .set({ readUserCnt: () => 'readUserCnt + 1' })
       .where({
         user: Not(userId),
+        chat: chatId,
         id: MoreThan(checkedLastMessageId),
       })
       .execute();
@@ -232,6 +236,7 @@ export class ChatService {
       const joinChat: JoinChat = await this.joinChatRepository.findOne({
         where: {
           user: userId,
+          chat: chatId,
         },
         relations: ['checkedLastMessage'],
       });
@@ -241,7 +246,9 @@ export class ChatService {
         },
       });
 
-      const checkedLastMessageId: number = joinChat.checkedLastMessage.id;
+      let checkedLastMessageId: number | null =
+        joinChat?.checkedLastMessage?.id;
+      checkedLastMessageId = checkedLastMessageId ? checkedLastMessageId : 0;
 
       // 읽은수 카운트 할 메시지 조회
       await this.messageRepository
@@ -250,6 +257,7 @@ export class ChatService {
         .set({ readUserCnt: () => 'readUserCnt + 1' })
         .where({
           user: Not(user.id),
+          chat: chatId,
           id: Between(checkedLastMessageId + 1, toMessageId),
         })
         .execute();

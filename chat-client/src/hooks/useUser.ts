@@ -45,6 +45,7 @@ const useUser = () => {
     const { data } = await createChat(payload);
     socket.emitChatJoined({
       chat: data.chat,
+      userId: payload.userId,
       joinIds,
     })    
   }

@@ -31,6 +31,7 @@ export class ChatGateway {
     @MessageBody() data: SendMessageDto,
     @ConnectedSocket() client: Socket,
   ) {
+    console.log('========== message-check ==========');
     const userId =
       client.handshake.headers.userid || client.handshake.auth.userid;
 
@@ -42,7 +43,7 @@ export class ChatGateway {
     });
 
     this.server.to(`${data.chatId}`).emit('message', message);
-
+    console.log('========== =========== ==========');
     return 1;
   }
 
@@ -51,17 +52,19 @@ export class ChatGateway {
     @MessageBody() data: MessageCheckDto,
     @ConnectedSocket() client: Socket,
   ) {
+    console.log('========== message-check ==========');
     const userId: number | boolean = this.getUserId(client);
     if (!userId) return;
     const checkMesssageRange: [number, number] | boolean =
       await this.chatService.checkMsg(userId, data.chatId, data.toMessageId);
-
     if (!checkMesssageRange) return;
 
     this.server.to(`${data.chatId}`).emit('message-check', {
       checkMesssageRange,
       checkerId: data.checkerId,
+      chatId: data.chatId,
     });
+    console.log('========== =========== ==========');
   }
 
   @SubscribeMessage('message-check-room-enter')
@@ -69,8 +72,9 @@ export class ChatGateway {
     @MessageBody() data: MessageCheckRangeDto,
     @ConnectedSocket() client: Socket,
   ) {
-    // broadcast
+    console.log('========== message-check-room-enter ==========');
     this.server.to(`${data.chatId}`).emit('message-check-room-enter', data);
+    console.log('========== =========== ==========');
   }
 
   @SubscribeMessage('chat-joined')
@@ -78,14 +82,17 @@ export class ChatGateway {
     @MessageBody() data: ChatJoined,
     @ConnectedSocket() client: Socket,
   ) {
+    console.log('========== chat-joined ==========');
     const chatId = data.chat.id;
-
+    this.client[data.userId].join(`${chatId}`);
     data.joinIds.forEach((joinId: number) => {
       if (this.client[joinId]) {
+        console.log(joinId);
         this.client[joinId].join(`${chatId}`);
         this.server.to(this.client[joinId].id).emit('chat-joined', data);
       }
     });
+    console.log('========== =========== ==========');
   }
 
   async handleConnection(@ConnectedSocket() client: Socket) {

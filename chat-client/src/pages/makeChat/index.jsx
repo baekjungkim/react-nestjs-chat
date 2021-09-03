@@ -15,7 +15,9 @@ const MakeChat = (props) => {
   
   const onCreateHandler = async () => {
     await onSubmitHandler()
+    // TODO: props.history.push는 정상동작하지 않음
     props.history.replace('/chats');
+    // window.location.href = '/chats'
   }
 
   const headerHeight = 63;

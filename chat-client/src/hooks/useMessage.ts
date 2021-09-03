@@ -38,8 +38,10 @@ const useMessage = (chatId: number, notification: Function) => {
       });
     }
 
-    const checkMessageInner = (rangeMsg: {checkMesssageRange: [number, number], checkerId: string}) => {
+    const checkMessageInner = (rangeMsg: {checkMesssageRange: [number, number], checkerId: string, chatId: number}) => {
+      console.log(rangeMsg);
       if (rangeMsg.checkerId === window.localStorage.getItem('userId')) return;
+      if (chatId !== rangeMsg.chatId) return;
       let index: number = -1;
       const tempMessage: Message[] = [...messages];
       let countingMessages: Message[] = tempMessage.filter((msg: Message, idx: number) => {
@@ -56,9 +58,10 @@ const useMessage = (chatId: number, notification: Function) => {
       setMessage([...tempMessage.slice(0, index), ...countingMessages])
     }
 
-    const checkMessageEnter = ({ checkMesssageRange, checkerId }: { checkMesssageRange: [number, number], checkerId: string }) => {
-      if (checkerId === window.localStorage.getItem('userId')) return;
-      checkMessageInner({ checkMesssageRange, checkerId })
+    const checkMessageEnter = ({ checkMesssageRange, checkerId, chatId }: { checkMesssageRange: [number, number], checkerId: string, chatId: number }) => {
+      console.log('checkMessageEnter');
+      console.log(checkMesssageRange, checkerId, chatId);
+      checkMessageInner({ checkMesssageRange, checkerId, chatId })
     }
 
     socket.onReceiveMessage(receiveMsg);
@@ -76,9 +79,9 @@ const useMessage = (chatId: number, notification: Function) => {
     (async () => {
       const userId = window.localStorage.getItem('userId');
       const { data } = await getMessages(chatId, userId || '');
-      
+      console.log(data);
       setMessage(data.messages);
-      if (data.messages[data.messages.length - 1].id !== data.checkedLastMessageId) {
+      if (data.checkedLastMessageId && data.messages[data.messages.length - 1].id !== data.checkedLastMessageId) {
         const checkMesssageRange = [
           data.checkedLastMessageId,
           data.messages[data.messages.length - 1].id

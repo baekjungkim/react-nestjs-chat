@@ -32,10 +32,6 @@ export class MessageCheckRangeDto {
   @Type(() => Number)
   chatId: number;
 
-  @IsInt()
-  @Type(() => Number)
-  toMessageId: number;
-
   @IsInt({ each: true })
   checkMesssageRange: [number, number];
 }
@@ -62,6 +58,10 @@ export class ChatJoined {
   @IsInt({ each: true })
   @Type(() => Number)
   joinIds: number[];
+
+  @IsInt()
+  @Type(() => Number)
+  userId: number;
 
   @IsObject()
   chat: Chat;
