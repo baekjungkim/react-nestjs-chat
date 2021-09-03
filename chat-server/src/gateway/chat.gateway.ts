@@ -10,7 +10,12 @@ import { Server, Socket } from 'socket.io';
 import { ChatService } from 'src/chat/chat.service';
 import { JoinChat } from 'src/entity/joinChat.entity';
 import { Message } from 'src/entity/message.entity';
-import { ChatJoined, MessageCheckDto, SendMessageDto } from './chat.dto';
+import {
+  ChatJoined,
+  MessageCheckDto,
+  MessageCheckRangeDto,
+  SendMessageDto,
+} from './chat.dto';
 
 @WebSocketGateway()
 export class ChatGateway {
@@ -53,7 +58,19 @@ export class ChatGateway {
 
     if (!checkMesssageRange) return;
 
-    this.server.to(`${data.chatId}`).emit('message-check', checkMesssageRange);
+    this.server.to(`${data.chatId}`).emit('message-check', {
+      checkMesssageRange,
+      checkerId: data.checkerId,
+    });
+  }
+
+  @SubscribeMessage('message-check-room-enter')
+  async handleMessageCheckByRoomEnter(
+    @MessageBody() data: MessageCheckRangeDto,
+    @ConnectedSocket() client: Socket,
+  ) {
+    // broadcast
+    this.server.to(`${data.chatId}`).emit('message-check-room-enter', data);
   }
 
   @SubscribeMessage('chat-joined')

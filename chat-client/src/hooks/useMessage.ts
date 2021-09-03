@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 import { getMessages } from '../apis/chat';
 import chatSocket, {ChatSocket} from '../socket';
 
-
 export interface Message {
   id: number;
   readUserCnt: number;
@@ -24,7 +23,6 @@ export interface Message {
 const useMessage = (chatId: number, notification: Function) => {
   const [socket] = useState<ChatSocket>(chatSocket);
   const [messages, setMessage] = useState<Message[]>([]);
-  const [isJoinEnd, setIsJoinEnd] = useState<boolean>(false);
 
   useEffect(() => {
     const receiveMsg = (msg: Message) => {
@@ -32,22 +30,21 @@ const useMessage = (chatId: number, notification: Function) => {
         notification(msg);
         return
       }
+      setMessage([...messages, msg]);
       socket.emitMessageCheck({
         chatId,
-        userId: window.localStorage.getItem('userId') || '',
+        checkerId: window.localStorage.getItem('userId') || '',
         toMessageId: msg.id
       });
-      setMessage([...messages, msg]);
     }
 
-    const checkMessage = (rangeMsg: [number, number]) => {
-      // range[0] 보다 크고 ran
-      console.log(rangeMsg);
+    const checkMessageInner = (rangeMsg: {checkMesssageRange: [number, number], checkerId: string}) => {
+      if (rangeMsg.checkerId === window.localStorage.getItem('userId')) return;
       let index: number = -1;
       const tempMessage: Message[] = [...messages];
       let countingMessages: Message[] = tempMessage.filter((msg: Message, idx: number) => {
-        const isOver = msg.id > rangeMsg[0];
-        if (index === -1 && msg.id) index = idx;
+        const isOver = msg.id > rangeMsg.checkMesssageRange[0];
+        if (index === -1 && isOver) index = idx;
         return isOver;
       })
 
@@ -55,36 +52,49 @@ const useMessage = (chatId: number, notification: Function) => {
         msg.readUserCnt += 1;
         return msg;
       });
-      console.log(index);
-      console.log(countingMessages);
+      
       setMessage([...tempMessage.slice(0, index), ...countingMessages])
     }
 
-    socket.onReceiveMessage(receiveMsg);
-    socket.onMessageCheck(checkMessage); // TODO: 메시지가 누군가에게 읽혔다는 정보 수신 버그있음
+    const checkMessageEnter = ({ checkMesssageRange, checkerId }: { checkMesssageRange: [number, number], checkerId: string }) => {
+      if (checkerId === window.localStorage.getItem('userId')) return;
+      checkMessageInner({ checkMesssageRange, checkerId })
+    }
 
+    socket.onReceiveMessage(receiveMsg);
+    socket.onMessageCheckByInner(checkMessageInner); 
+    socket.onMessageCheckMyEnter(checkMessageEnter);
+    
     return () => {
       socket.offReceiveMessage(receiveMsg);
-      socket.offMessageCheck(checkMessage);
+      socket.offMessageCheckByInner(checkMessageInner);
+      socket.offMessageCheckMyEnter(checkMessageEnter);
     }
-  }, [socket, messages]); 
+  }, [messages]); 
 
   useEffect(() => {
     (async () => {
-      const { data } = await getMessages(chatId, window.localStorage.getItem('userId') || '');
-      setMessage(data);
+      const userId = window.localStorage.getItem('userId');
+      const { data } = await getMessages(chatId, userId || '');
+      
+      setMessage(data.messages);
+      if (data.messages[data.messages.length - 1].id !== data.checkedLastMessageId) {
+        const checkMesssageRange = [
+          data.checkedLastMessageId,
+          data.messages[data.messages.length - 1].id
+        ]
+        const payload = {
+          chatId,
+          checkMesssageRange,
+          checkerId: userId
+        }
+        socket.emitMessageCheckRoomEnter(payload);
+      }
     })();
-  }, [chatId]);
+    return () => {
 
-  // useEffect(() => {
-  //   if (!messages.length) return;
-  //   console.log(messages, );
-  //     // socket.emitMessageCheck({
-  //     //   chatId,
-  //     //   userId: window.localStorage.getItem('userId') || '',
-  //     //   toMessageId: messages[messages.length - 1].id
-  //     // });
-  // }, [messages]);
+    }
+  }, [chatId]);
 
   const isSameChat = (msg: Message) => {
     return msg.chat.id === chatId;

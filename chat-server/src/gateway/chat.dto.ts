@@ -21,6 +21,23 @@ export class MessageCheckDto {
   @IsInt()
   @Type(() => Number)
   toMessageId: number;
+
+  @IsInt()
+  @Type(() => Number)
+  checkerId: number;
+}
+
+export class MessageCheckRangeDto {
+  @IsInt()
+  @Type(() => Number)
+  chatId: number;
+
+  @IsInt()
+  @Type(() => Number)
+  toMessageId: number;
+
+  @IsInt({ each: true })
+  checkMesssageRange: [number, number];
 }
 
 class Chat {

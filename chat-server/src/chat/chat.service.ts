@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Between, In, LessThan, Not, Repository } from 'typeorm';
+import { Between, In, LessThan, MoreThan, Not, Repository } from 'typeorm';
 
 import { Connection } from 'typeorm';
 
@@ -16,18 +16,18 @@ import { Check } from 'src/entity/check.entity';
 SELECT 
   * 
 FROM 
-	join_chat 
+  join_chat 
 LEFT JOIN 
-	chat 
+  chat 
 ON
-	chat.id = join_chat.chatId
+  chat.id = join_chat.chatId
 LEFT JOIN 
-	message
+  message
 ON
-	message.id = (SELECT id FROM message ORDER BY id DESC LIMIT 1)
+  message.id = (SELECT id FROM message ORDER BY id DESC LIMIT 1)
     AND chat.id = message.chatId
 WHERE 
-	join_chat.userId= 1;
+  join_chat.userId= 1;
 */
 
 @Injectable()
@@ -62,9 +62,8 @@ export class ChatService {
     chatId: number,
     fromId: number,
     userId: number,
-  ): Promise<Message[]> {
+  ): Promise<{ checkedLastMessageId: number; messages: Message[] }> {
     // TODO: limit이 이상하게 동작하는거 같아서 일단 뻄...
-    // DESC로 하면 결과를 reverse해서 사용해야함... => map => length - index - 1로 대체할 것!
     const chat: Chat = await this.chatRepository.findOne(chatId);
     const where = {
       chat,
@@ -73,16 +72,28 @@ export class ChatService {
 
     if (!fromId) delete where.id;
 
-    await this.joinChatRepository
-      .createQueryBuilder('joinChat')
-      .update(JoinChat)
-      .set({
-        notReadMsgCnt: 0,
+    const checkedLastMessage: JoinChat = await this.joinChatRepository.findOne({
+      where: {
+        chat: chatId,
+        user: userId,
+      },
+      relations: ['checkedLastMessage'],
+    });
+    const checkedLastMessageId: number =
+      checkedLastMessage.checkedLastMessage.id;
+
+    // 각 메시지 읽은유저 + 1 업데이트
+    const a = await this.messageRepository
+      .createQueryBuilder('message')
+      .update(Message)
+      .set({ readUserCnt: () => 'readUserCnt + 1' })
+      .where({
+        user: Not(userId),
+        id: MoreThan(checkedLastMessageId),
       })
-      .where('userID=:userId AND chatId=:chatId', { userId, chatId })
       .execute();
 
-    return await this.messageRepository.find({
+    const messages: Message[] = await this.messageRepository.find({
       where,
       select: ['id', 'msg', 'msgType', 'createdAt', 'readUserCnt'],
       order: {
@@ -91,6 +102,29 @@ export class ChatService {
       relations: ['checks', 'user'],
       // take: 200,
     });
+
+    // 읽지않은 목록수 0, 확인한 메시지를 마지막 메시지로 업데이트
+    await this.joinChatRepository.save(checkedLastMessage);
+
+    await this.joinChatRepository
+      .createQueryBuilder('joinChat')
+      .update(JoinChat)
+      .set({
+        checkedLastMessage: messages.length
+          ? messages[messages.length - 1]
+          : null,
+        notReadMsgCnt: 0,
+      })
+      .where({
+        chat: chatId,
+        user: userId,
+      })
+      .execute();
+
+    return {
+      checkedLastMessageId,
+      messages,
+    };
   }
 
   async createChat(payloadChat: CreateChatDto) {
@@ -193,7 +227,7 @@ export class ChatService {
     // message에서 readUserCnt + 1
     const queryRunner = this.connection.createQueryRunner();
     await queryRunner.startTransaction();
-    console.log(userId);
+
     try {
       const joinChat: JoinChat = await this.joinChatRepository.findOne({
         where: {

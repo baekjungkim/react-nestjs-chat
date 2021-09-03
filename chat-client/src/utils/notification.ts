@@ -2,7 +2,6 @@ import { notification } from "antd";
 import { Message } from '../hooks/useMessage';
 
 export function chromNotificationByNewMsgOtherChat(msg: string) {
-  console.log(Notification.permission);
   if (!("Notification" in window)) {
     alert("This browser does not support desktop notification");
   }

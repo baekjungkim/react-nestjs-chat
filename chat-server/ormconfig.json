@@ -11,5 +11,5 @@
     "migrationsDir": "dist/migrations"
   },
   "synchronize": true,
-  "logging": true
+  "logging": false
 }

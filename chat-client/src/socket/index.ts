@@ -25,9 +25,12 @@ export class ChatSocket {
     this.socket.emit('message-check', data);
   }
 
+  emitMessageCheckRoomEnter(data: any) {
+    this.socket.emit('message-check-room-enter', data);
+  }
+
   // 채팅방 생성 알림
   onChatJoined(cb: any) {
-    console.log('event mount onChatJoined')
     this.socket.on('chat-joined', cb);
   }
 
@@ -44,12 +47,20 @@ export class ChatSocket {
     this.socket.off('message', cb);
   }
   
-  onMessageCheck(cb: any) {
+  onMessageCheckByInner(cb: any) {
     this.socket.on('message-check', cb);
   }
-  offMessageCheck(cb: any) {
+  offMessageCheckByInner(cb: any) {
     this.socket.off('message-check', cb);
   }
+  
+  onMessageCheckMyEnter(cb: any) {
+    this.socket.on('message-check-room-enter', cb);
+  }
+  offMessageCheckMyEnter(cb: any) {
+    this.socket.off('message-check-room-enter', cb);
+  }
+  
 }
 
 export default new ChatSocket();

@@ -15,15 +15,13 @@ export class ChatController {
   // 채팅방 생성
   @Post('/')
   async createChat(@Body() body: CreateChatDto) {
-    console.log(body);
-    return await this.chatService.createChat(body);
+    const result = await this.chatService.createChat(body);
+    return result;
   }
 
   // 메시지목록
   @Get('/:chatId')
   async getMessages(@Param() param, @Query() query) {
-    console.log('메시지목록');
-    console.log(param);
     const fromId = query.fromId;
     return await this.chatService.getChatMessages(
       param.chatId,
